@@ -1,6 +1,7 @@
 const UserModel = require('../Models/UserModel');
 const crypto = require('crypto');
 const  sendEmail  = require('../Utils/mails/RegisterMail');
+const WelcomeMail = require('../Utils/mails/WelcomeMail');
 const bcrypt = require('bcryptjs');
 const generateToken = require('../Utils/Jwt/Token');
 //User Registration
@@ -105,6 +106,13 @@ const verifyEmailController = async (req, res) =>{
             user.verificationToken = undefined;
             user.verificationTokenExpiration = undefined;
             await user.save();
+
+
+            // Send welcome email
+                const platformLink = `www.devarena.com`;
+    WelcomeMail(user.email, user.firstName , platformLink);
+
+
             res.status(200).json({ message: 'Email verified successfully' });
     
         } catch (error) {
@@ -112,9 +120,45 @@ const verifyEmailController = async (req, res) =>{
             res.status(500).json({ message: 'Server error' });
         }
 }
+// New verify email
+const newverifyEmailController = async (req ,res) => {
+   const {email} = req.body;
+    //check if user exists
+    const user = await UserModel.findOne({email});
+    if(!user){
+        return res.status(400).json({
+            success:false,
+            message:"usernotfound"
+        })
+    }
+
+    if(user.isVerified){
+        return res.status(400).json({
+            success:false,
+            message:"emailalreadyverified"
+        })
+    }
+
+    //generate new token
+    const verificationToken  = crypto.randomBytes(32).toString("hex") + user._id;
+    const verificationTokenExpiration = Date.now() + 3600000;
+    
+    user.verificationToken = verificationToken;
+    user.verificationTokenExpiration = verificationTokenExpiration;
+    await user.save();
+    //sendmail
+    const verifyLink = `${process.env.Client_url}user/verify?token=${verificationToken}&id=${user._id}`;
+    sendEmail(user.email, user.firstName , verifyLink);
+
+    res.status(200).json({
+        success:true,
+        message:"New verification link sent to your email"
+    })
+}
 
 module.exports = {
     userRegisterController,
     userLoginController , 
-    verifyEmailController
+    verifyEmailController , 
+    newverifyEmailController
 }

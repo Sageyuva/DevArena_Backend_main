@@ -9,12 +9,14 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+
 // Database connection (assuming you have a DB.js file for MongoDB connection)
 connectDB();
 
 
 //import routes
  const userRoutes = require('./Routes/UserRoute');
+  const userActionRoutes = require('./Routes/UserActionsRoutes');
 
 // Base route for API
 const apiRouter = express.Router();
@@ -27,6 +29,9 @@ apiRouter.get('/', (req, res) => {
 
 //User Routes
 apiRouter.use("/user",  userRoutes);
+//User Action Routes
+apiRouter.use("/userAction", userActionRoutes);
+
 
 
 // Error handling for invalid routes
