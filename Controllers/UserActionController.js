@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const UserModel = require('../Models/UserModel');
 
-const addFriendController = async (req, res) => {
+const addFriend = async (req, res) => {
     const senderId = req.userId;
     const { receiverId } = req.params;
 
@@ -49,6 +49,7 @@ const addFriendController = async (req, res) => {
 
 
 
+
 module.exports = {
-    addFriendController
+    addFriend
 };
